@@ -76,9 +76,9 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
                                      ];
             
             anim.values = @[
-                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0, 0, 0, 0, 0)],
-                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0, M_PI, 0.0, 1.0,0.0)],
-                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0, M_PI, 0.0, 0.0,1.0)]
+                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0,    0,   0,   0,   0)],
+                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0, M_PI, 0.0, 1.0, 0.0)],
+                            [NSValue valueWithCATransform3D:RTSpinKit3DRotationWithPerspective(1.0/120.0, M_PI, 0.0, 0.0, 1.0)]
                             ];
             
             [plane addAnimation:anim forKey:@"spinkit-anim"];
@@ -654,10 +654,59 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
 -(void)resumeLayers {
     CFTimeInterval pausedTime = [self.layer timeOffset];
     self.layer.speed = 1.0;
+    self.layer.repeatCount = HUGE_VALF;
     self.layer.timeOffset = 0.0;
     self.layer.beginTime = 0.0;
     CFTimeInterval timeSincePause = [self.layer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
     self.layer.beginTime = timeSincePause;
+}
+
+- (void)closeAnimated
+{
+    [self pauseLayers];
+    [self.layer removeAllAnimations];
+    self.layer.masksToBounds = YES;
+    
+    int i = 1;
+    for (CALayer *layer in self.layer.sublayers) {
+        
+        CAKeyframeAnimation *anim = [CAKeyframeAnimation animationWithKeyPath:@"transform"];
+        anim.removedOnCompletion = YES;
+        anim.repeatCount = 1;
+        anim.duration = 0.2;
+        anim.beginTime = 0;
+        anim.keyTimes = @[@(0.0), @(1.0)];
+        anim.delegate = self;
+        
+        anim.timingFunctions = @[
+                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut],
+                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]
+                                 ];
+        
+        anim.values = @[
+                        [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.25*i, 0.25*i, 0.0)],
+                        [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.0, 0.0, 0.0)]
+                        ];
+        
+        i += 1;
+        CAKeyframeAnimation *oldAnim = [[layer animationForKey:@"spinkit-anim"] mutableCopy];
+        [oldAnim setRepeatCount:0];
+        [oldAnim setRepeatDuration:0.01];
+        [layer addAnimation:oldAnim forKey:@"spinkit-anim"];
+        [layer addAnimation:anim forKey:@"spinkit-close-anim"];
+    }
+    [self resumeLayers];
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+    [self stopAnimating];
+    for (CALayer *layer in self.layer.sublayers) {
+        CAKeyframeAnimation *oldAnim = [[layer animationForKey:@"spinkit-anim"] mutableCopy];
+        [oldAnim setRepeatCount:HUGE_VALF];
+        [oldAnim setRepeatDuration:0];
+        [layer addAnimation:oldAnim forKey:@"spinkit-anim"];
+    }
 }
 
 -(CGSize)sizeThatFits:(CGSize)size {
