@@ -26,6 +26,7 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
 @interface RTSpinKitView ()
 @property (nonatomic, assign) RTSpinKitViewStyle style;
 @property (nonatomic, assign, getter = isStopped) BOOL stopped;
+@property (nonatomic, assign) CGSize customSize;
 @end
 
 @implementation RTSpinKitView
@@ -35,11 +36,17 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
 }
 
 -(instancetype)initWithStyle:(RTSpinKitViewStyle)style color:(UIColor*)color {
+    return [self initWithStyle:style color:[UIColor grayColor] size:CGSizeMake(37.0, 37.0)];
+}
+
+-(instancetype)initWithStyle:(RTSpinKitViewStyle)style color:(UIColor*)color size:(CGSize)size {
     self = [super init];
+    self.customSize = size;
     if (self) {
         _style = style;
         _color = color;
         _hidesWhenStopped = YES;
+        
         
         [self sizeToFit];
         
@@ -710,7 +717,7 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
 }
 
 -(CGSize)sizeThatFits:(CGSize)size {
-    return CGSizeMake(37.0, 37.0);
+    return self.customSize;
 }
 
 -(void)setColor:(UIColor *)color {
