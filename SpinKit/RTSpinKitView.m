@@ -36,7 +36,7 @@ static CATransform3D RTSpinKit3DRotationWithPerspective(CGFloat perspective,
 }
 
 -(instancetype)initWithStyle:(RTSpinKitViewStyle)style color:(UIColor*)color {
-    return [self initWithStyle:style color:[UIColor grayColor] size:CGSizeMake(37.0, 37.0)];
+    return [self initWithStyle:style color:color size:CGSizeMake(37.0, 37.0)];
 }
 
 -(instancetype)initWithStyle:(RTSpinKitViewStyle)style color:(UIColor*)color size:(CGSize)size {
